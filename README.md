@@ -7,6 +7,20 @@ Plataforma web (SaaS) que substitui a agenda de papel de uma barbearia: agendame
 **🔗 Demo online:** https://barbearia-demo-99p1.onrender.com
 *(a primeira visita pode levar cerca de 1 minuto, porque o serviço gratuito hiberna quando fica sem acesso)*
 
+## Capturas de tela
+
+| Início | Login (modo demo) |
+| :---: | :---: |
+| ![Página inicial](docs/screenshots/home.png) | ![Login com botões de demonstração](docs/screenshots/login-demo.png) |
+
+| Dashboard do administrador | Faturamento |
+| :---: | :---: |
+| ![Dashboard do administrador](docs/screenshots/dashboard-admin.png) | ![Faturamento e assinatura](docs/screenshots/faturamento.png) |
+
+| Agenda do barbeiro | Agendamento do cliente |
+| :---: | :---: |
+| ![Painel do barbeiro](docs/screenshots/agenda-barbeiro.png) | ![Fluxo de agendamento](docs/screenshots/agendamento.png) |
+
 ---
 
 ## O problema

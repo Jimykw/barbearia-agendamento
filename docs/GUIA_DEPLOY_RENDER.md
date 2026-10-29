@@ -15,7 +15,7 @@ gratuito em modo demonstracao**, sem Docker e sem PostgreSQL.
    - `SECRET_KEY` gerada automaticamente
    - `PYTHON_VERSION=3.12.10` e `NODE_VERSION=22`
 3. Confirme a criacao e aguarde o primeiro build.
-4. Abra a URL `https://barbearia-demo.onrender.com` (o nome pode variar) e faca login
+4. Abra a URL `https://barbearia-demo-99p1.onrender.com` e faca login
    pelos botoes demo.
 
 ### O que acontece no arranque
@@ -32,7 +32,7 @@ gratuito em modo demonstracao**, sem Docker e sem PostgreSQL.
 
 No Render (ou em um servico externo como UptimeRobot), crie um monitor HTTP:
 
-- URL: `https://SEU-SERVICO.onrender.com/healthz`
+- URL: `https://barbearia-demo-99p1.onrender.com/healthz`
 - Intervalo: 5 minutos
 - Metodo: GET, esperando status `200`
 

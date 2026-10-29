@@ -1,0 +1,298 @@
+.appointment-sync-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* Estatísticas */
+.sync-stats-header {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border-left: 4px solid #808080;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card.pending {
+  border-left-color: #FFA500;
+}
+
+.stat-card.confirmed {
+  border-left-color: #4169E1;
+}
+
+.stat-card.in-progress {
+  border-left-color: #FF6347;
+}
+
+.stat-card.completed {
+  border-left-color: #32CD32;
+}
+
+.stat-number {
+  font-size: 2em;
+  font-weight: bold;
+  color: #333;
+}
+
+.stat-label {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Filtros */
+.sync-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn,
+.refresh-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  font-size: 0.95em;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-btn:hover,
+.refresh-btn:hover {
+  background: #f0f0f0;
+}
+
+.filter-btn.active {
+  background: #4169E1;
+  color: white;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Última atualização */
+.last-update {
+  text-align: right;
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+/* Erro */
+.error-message {
+  background: #ffe6e6;
+  border-left: 4px solid #dc143c;
+  color: #c41e3a;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+/* Loading */
+.appointment-sync.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+/* Lista de Agendamentos */
+.appointments-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+/* Card de Agendamento */
+.appointment-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  animation: slideIn 0.3s ease;
+}
+
+.appointment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.appointment-header {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #eee;
+}
+
+.appointment-info h3 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 1.1em;
+}
+
+.appointment-service {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.appointment-datetime {
+  margin: 5px 0 0 0;
+  color: #999;
+  font-size: 0.85em;
+}
+
+.appointment-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appointment-status span {
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+/* Detalhes */
+.appointment-details {
+  padding: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 0.9em;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-item .label {
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 3px;
+  font-size: 0.85em;
+}
+
+.detail-item span:not(.label) {
+  color: #333;
+  word-break: break-word;
+}
+
+/* Ações */
+.appointment-actions {
+  padding: 15px;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-start,
+.btn-complete {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+}
+
+.btn-start {
+  background: #FF6347;
+}
+
+.btn-start:hover {
+  background: #ff4433;
+}
+
+.btn-complete {
+  background: #32CD32;
+}
+
+.btn-complete:hover {
+  background: #2eb82e;
+}
+
+/* Estado vazio */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .appointment-card {
+    grid-column: 1 / -1;
+  }
+
+  .appointment-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .appointment-details {
+    grid-template-columns: 1fr;
+  }
+
+  .sync-filters {
+    flex-direction: column;
+  }
+
+  .filter-btn,
+  .refresh-btn {
+    width: 100%;
+  }
+
+  .appointment-actions {
+    flex-direction: column;
+  }
+
+  .btn-start,
+  .btn-complete {
+    width: 100%;
+  }
+}

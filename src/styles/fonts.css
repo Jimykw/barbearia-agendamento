@@ -1,0 +1,26 @@
+@import "@fontsource/inter/latin-300.css";
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/inter/latin-600.css";
+@import "@fontsource/inter/latin-700.css";
+@import "@fontsource/cinzel/latin-400.css";
+@import "@fontsource/cinzel/latin-500.css";
+@import "@fontsource/cinzel/latin-600.css";
+@import "@fontsource/cinzel/latin-700.css";
+@import "@fontsource/cinzel/latin-800.css";
+@import "@fontsource/cinzel/latin-900.css";
+
+:root {
+  --font-heading: 'Cinzel', serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--font-body), 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size-adjust: 0.52;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), 'Times New Roman', serif;
+  letter-spacing: -0.02em;
+}

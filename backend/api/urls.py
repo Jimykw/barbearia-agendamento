@@ -1,0 +1,78 @@
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
+
+from .views import (
+    AdminUserDetailView,
+    AdminUserListView,
+    AdminUserResetPasswordView,
+    ApiHealthView,
+    AvailabilityView,
+    AppointmentDetailView,
+    AppointmentListCreateView,
+    BlockTemplateDetailView,
+    BlockTemplateListCreateView,
+    BlockedSlotDetailView,
+    BlockedSlotListCreateView,
+    BusinessHoursDetailView,
+    BusinessHoursListCreateView,
+    ClientPackageListView,
+    ClientPackageDetailView,
+    ClientPackageLoginNoticeDismissView,
+    ClientPackageSubscriptionDetailView,
+    ClientPackageSubscriptionListView,
+    ClientPackageSubscriptionCreateView,
+    EmailOrUsernameTokenObtainPairView,
+    LogoutView,
+    PasswordChangeView,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
+    PortfolioImageUploadView,
+    PortfolioSiteConfigView,
+    RegisterView,
+    UserView,
+)
+from .sync_views import AppointmentSyncViewSet, AppointmentDetailSyncView
+
+
+router = DefaultRouter()
+router.register(r'appointments-sync', AppointmentSyncViewSet, basename='appointment-sync')
+
+urlpatterns = [
+    path("health/", ApiHealthView.as_view(), name="api-health"),
+    path("auth/register/", RegisterView.as_view(), name="register"),
+    path("auth/login/", EmailOrUsernameTokenObtainPairView.as_view(), name="login"),
+    path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/logout/", LogoutView.as_view(), name="logout"),
+    path("auth/user/", UserView.as_view(), name="user"),
+    path("auth/me/", UserView.as_view(), name="me"),
+    path("auth/password/change/", PasswordChangeView.as_view(), name="password-change"),
+    path("auth/password/forgot/", PasswordResetRequestView.as_view(), name="password-forgot"),
+    path("auth/password/reset/confirm/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
+    path("auth/users/", AdminUserListView.as_view(), name="admin-users"),
+    path("auth/users/<int:pk>/", AdminUserDetailView.as_view(), name="admin-user-detail"),
+    path("auth/users/<int:pk>/reset-password/", AdminUserResetPasswordView.as_view(), name="admin-user-reset-password"),
+    path("availability/", AvailabilityView.as_view(), name="availability"),
+    path("business-hours/", BusinessHoursListCreateView.as_view(), name="business-hours"),
+    path("business-hours/<int:pk>/", BusinessHoursDetailView.as_view(), name="business-hours-detail"),
+    path("blocked-slots/", BlockedSlotListCreateView.as_view(), name="blocked-slots"),
+    path("blocked-slots/<int:pk>/", BlockedSlotDetailView.as_view(), name="blocked-slots-detail"),
+    path("blocked-templates/", BlockTemplateListCreateView.as_view(), name="blocked-templates"),
+    path("blocked-templates/<int:pk>/", BlockTemplateDetailView.as_view(), name="blocked-templates-detail"),
+    path("client-packages/", ClientPackageListView.as_view(), name="client-packages"),
+    path("client-packages/<int:pk>/", ClientPackageDetailView.as_view(), name="client-packages-detail"),
+    path("client-packages/subscriptions/", ClientPackageSubscriptionListView.as_view(), name="client-packages-subscriptions"),
+    path(
+        "client-packages/subscriptions/<int:pk>/dismiss-login-notice/",
+        ClientPackageLoginNoticeDismissView.as_view(),
+        name="client-packages-subscription-dismiss-notice",
+    ),
+    path("client-packages/subscriptions/<int:pk>/", ClientPackageSubscriptionDetailView.as_view(), name="client-packages-subscriptions-detail"),
+    path("client-packages/subscribe/", ClientPackageSubscriptionCreateView.as_view(), name="client-packages-subscribe"),
+    path("appointments/", AppointmentListCreateView.as_view(), name="appointments"),
+    path("appointments/<int:pk>/", AppointmentDetailView.as_view(), name="appointment-detail"),
+    path("appointments/<int:pk>/sync/", AppointmentDetailSyncView.as_view(), name="appointment-detail-sync"),
+    path("portfolio/upload/", PortfolioImageUploadView.as_view(), name="portfolio-image-upload"),
+    path("portfolio/", PortfolioSiteConfigView.as_view(), name="portfolio-site-config"),
+    path('', include(router.urls)),
+]

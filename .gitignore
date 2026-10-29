@@ -1,0 +1,48 @@
+# Dependências e artefactos Node (frontend na raiz)
+node_modules/
+dist/
+
+# Variáveis de ambiente (nunca commitar segredos)
+.env
+.env.local
+.env.*.local
+
+# Python / Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+
+# Base de dados local
+db.sqlite3
+backend/db.sqlite3
+
+# Build da SPA servida pelo Django em / (ver backend/core/urls.py)
+backend/static/spa/
+
+# Uploads locais
+media/
+backend/media/
+
+# SO / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Build e artefactos Python
+staticfiles/
+backend/staticfiles/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+logs/

@@ -1,0 +1,36 @@
+
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <!-- Evita cache agressivo do shell HTML (bundles têm hash no URL). -->
+      <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+      <meta http-equiv="Pragma" content="no-cache" />
+      <meta http-equiv="Expires" content="0" />
+    <script>
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      /* Entrada = Início (/). /login é legado; /entrar só com intenção (botão Login). */
+      (function () {
+        var path = window.location.pathname.replace(/\/+$/, "") || "/";
+        var hasIntent = sessionStorage.getItem("barbearia_login_intent") === "1";
+        if (path === "/login" || (!hasIntent && path === "/entrar")) {
+          window.location.replace(window.location.origin + "/");
+        }
+      })();
+    </script>
+      <title>Barbearia Demo - Agendamento</title>
+      <style>html, body { height: 100%; margin: 0; background: #000000; color: #ffffff; } #root { height: 100%; min-height: 100%; }</style>
+    </head>
+
+    <body>
+      <div id="root"></div>
+      <script type="module" src="/src/main.tsx"></script>
+    </body>
+  </html>
+  

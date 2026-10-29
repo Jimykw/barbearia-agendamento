@@ -20,9 +20,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
 
+from core.healthz import healthz
 from core.spa_views import spa_index
 
 urlpatterns = [
+    path('healthz', healthz, name='healthz'),
+    path('healthz/', healthz),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('api/', include('services.urls')),

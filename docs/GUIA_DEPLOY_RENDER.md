@@ -1,78 +1,87 @@
 # Deploy no Render
 
-O repositorio tem dois pontos de entrada:
+O repositorio inclui `render.yaml` na raiz: um Blueprint que cria um **Web Service
+gratuito em modo demonstracao**, sem Docker e sem PostgreSQL.
 
-- `backend/build.sh`: instala dependencias, compila a SPA e roda `collectstatic` + `migrate`.
-- `backend/Procfile`: inicia o Gunicorn com `core.wsgi:application` apos aplicar migracoes.
+## Demo online (Blueprint)
 
-## 1. Banco de dados
+1. No painel do Render, escolha **New > Blueprint** e aponte para o repositorio.
+2. O Render le `render.yaml` e cria o servico `barbearia-demo` com:
+   - Root Directory: `backend`
+   - Build Command: `bash build.sh`
+   - Start Command: `bash start.sh`
+   - Health Check Path: `/healthz`
+   - `DEMO_MODE=true`, `DEMO_DB_PATH=/tmp/barbearia-demo.sqlite3`
+   - `SECRET_KEY` gerada automaticamente
+   - `PYTHON_VERSION=3.12.10` e `NODE_VERSION=22`
+3. Confirme a criacao e aguarde o primeiro build.
+4. Abra a URL `https://barbearia-demo.onrender.com` (o nome pode variar) e faca login
+   pelos botoes demo.
 
-Crie um PostgreSQL no Render e copie a `DATABASE_URL` (Internal Database URL).
-O backend ativa SSL automaticamente para hosts conhecidos (incluindo `render.com`).
+### O que acontece no arranque
 
-## 2. Web Service
+- `build.sh` compila a SPA, instala dependencias e roda `collectstatic`.
+- `start.sh` detecta `DEMO_MODE=true`, apaga o SQLite, roda `migrate` e executa
+  `seed_demo`, e so entao inicia o Gunicorn.
+- O SQLite fica em `/tmp`, entao a base e recriada a cada deploy/reinicio. Nada e
+  persistido entre sessoes.
+- Nenhuma integracao externa e chamada: WhatsApp, SMTP e Mercado Pago ficam
+  desativados; o checkout responde com um pagamento simulado.
 
-- Runtime: Python 3.12
-- Root Directory: `backend`
-- Build Command: `./build.sh`
-- Start Command: o Render usa o `Procfile`; se preferir, use
-  `python manage.py migrate --no-input && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT`
-- Variavel `NODE_VERSION`: `22` (necessaria para `npm` durante o build)
+### Monitor de uptime
 
-## 3. Variaveis de ambiente
+No Render (ou em um servico externo como UptimeRobot), crie um monitor HTTP:
 
-Obrigatorias:
+- URL: `https://SEU-SERVICO.onrender.com/healthz`
+- Intervalo: 5 minutos
+- Metodo: GET, esperando status `200`
 
-| Variavel | Exemplo | Observacao |
+O endpoint nao consulta o banco e responde `{"ok": true, "demo": true}`. Ele tambem
+reduz o efeito do cold start do plano gratuito (a primeira visita ainda pode levar
+cerca de 1 minuto).
+
+## Variaveis de ambiente (demo)
+
+Definidas no `render.yaml`; ajuste no painel se necessario:
+
+| Variavel | Valor | Observacao |
 | --- | --- | --- |
-| `SECRET_KEY` | string longa e aleatoria | obrigatoria pelo `settings` |
-| `DATABASE_URL` | `postgresql://...` | PostgreSQL do Render |
-| `ALLOWED_HOSTS` | `barbearia-demo.onrender.com` | dominio do servico |
 | `DJANGO_ENV` | `prod` | ativa `core/settings/prod.py` |
-| `CSRF_TRUSTED_ORIGINS` | `https://barbearia-demo.onrender.com` | obrigatorio para admin/forms |
-| `CORS_ALLOWED_ORIGINS` | `https://barbearia-demo.onrender.com` | se a SPA for servida pelo Django, pode repetir o dominio |
+| `DEMO_MODE` | `true` | SQLite, seed automatico, integracoes desativadas |
+| `DEMO_DB_PATH` | `/tmp/barbearia-demo.sqlite3` | recriado a cada arranque |
+| `DEMO_SEED_PASSWORD` | `demo12345` | senha das contas ficticias |
+| `DEMO_ADMIN_PASSWORD` | `demo12345` | senha do admin demo |
+| `SECRET_KEY` | gerada pelo Render | nao commitar |
+| `PYTHON_VERSION` | `3.12.10` | runtime |
+| `NODE_VERSION` | `22` | necessario para o build da SPA |
 
-Recomendadas:
+`ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS` recebem automaticamente o host
+`RENDER_EXTERNAL_HOSTNAME`. Se usar um dominio proprio, defina essas variaveis
+manualmente no painel.
 
-| Variavel | Padrao | Efeito |
-| --- | --- | --- |
-| `DEMO_MODE` | `False` | e-mail no console, WhatsApp/Mercado Pago desativados |
-| `DEMO_SEED_PASSWORD` | `demo12345` | senha das contas criadas pelo seed |
-| `DEMO_ADMIN_PASSWORD` | igual ao anterior | senha do admin do seed |
-| `FRONTEND_URL` | `http://localhost:5173` | retorno do Mercado Pago |
-| `BACKEND_PUBLIC_URL` | `http://127.0.0.1:8000` | URL de webhook enviada ao Mercado Pago |
-| `MERCADO_PAGO_ACCESS_TOKEN` | vazio | habilita checkout |
-| `MERCADO_PAGO_WEBHOOK_SECRET` | vazio | obrigatorio para aceitar webhook |
-| `WHATSAPP_ACCESS_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` | vazio | habilitam envio de WhatsApp |
-| `API_RATE_LIMIT_ANON` / `API_RATE_LIMIT_USER` | `120/hour` / `1200/hour` | throttling global |
-| `API_RATE_LIMIT_CONTACT` / `API_RATE_LIMIT_CHECKOUT` | `10/hour` / `30/hour` | throttling por endpoint |
+## Deploy sem modo demo
 
-Com `DJANGO_ENV=prod`, o projeto ativa redirect HTTPS, cookies seguros e HSTS (1 ano).
+Para um ambiente com PostgreSQL e integracoes reais:
 
-## 4. Primeiro deploy
+- `DEMO_MODE=false` (ou remova a variavel);
+- defina `DATABASE_URL` do PostgreSQL do Render;
+- defina `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` e `CORS_ALLOWED_ORIGINS`;
+- substitua o Start Command por `bash start.sh` (ele roda apenas `migrate` quando
+  `DEMO_MODE` nao esta ativo) e mantenha `bash build.sh`;
+- `seed_demo` nao roda e recusa execucao fora do modo demo;
+- configure `MERCADO_PAGO_WEBHOOK_SECRET` antes de habilitar o checkout.
 
-1. O build roda `npm ci`, `npm run build`, `pip install`, `collectstatic` e `migrate`.
-2. Se `SEED_DEMO_ON_DEPLOY=1`, o `seed_demo` roda ao final do build (idempotente).
-3. Sem essa variavel, rode manualmente no Shell do Render:
-
-```bash
-cd backend
-python manage.py seed_demo
-```
-
-4. Acesse `/api/health/` e depois a home.
-
-## 5. Checklist de seguranca
+## Checklist de seguranca
 
 - [ ] `SECRET_KEY` propria e fora do repositorio.
-- [ ] `DEMO_MODE=False` apenas se for conectar servicos externos reais.
-- [ ] `MERCADO_PAGO_WEBHOOK_SECRET` configurado se o checkout estiver ativo.
-- [ ] Senhas do seed trocadas ou contas removidas em ambiente real.
+- [ ] `DEMO_MODE=true` para a demo publica.
+- [ ] Senhas do seed trocadas se o ambiente deixar de ser demo.
 - [ ] `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS` e `CSRF_TRUSTED_ORIGINS` com o dominio final.
-- [ ] Backup do PostgreSQL habilitado.
 
 ## Limitacoes conhecidas
 
 - JWT fica em `localStorage` (risco de XSS); nao ha CSP.
-- A midia enviada pelo dashboard usa o disco local do servico; em plano sem disco persistente, arquivos somem a cada deploy.
-- O Render Free pode suspender o servico e expirar o PostgreSQL apos o periodo gratuito.
+- No modo demo o SQLite e efemero: reinicios apagam alteracoes feitas na sessao.
+- A midia enviada pelo dashboard usa o disco local do servico; no plano gratuito os
+  arquivos somem a cada deploy.
+- O Render Free hiberna por inatividade; a primeira visita depois disso e lenta.

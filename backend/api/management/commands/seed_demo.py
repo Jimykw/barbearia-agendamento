@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
@@ -35,6 +35,8 @@ class Command(BaseCommand):
     help = "Cria dados ficticios de demonstracao (idempotente)."
 
     def handle(self, *args, **options):
+        if not getattr(settings, "DEMO_MODE", False):
+            raise CommandError("seed_demo so pode rodar com DEMO_MODE=True.")
         password = str(getattr(settings, "DEMO_SEED_PASSWORD", "") or "demo12345")
         admin_password = str(getattr(settings, "DEMO_ADMIN_PASSWORD", "") or password)
 

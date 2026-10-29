@@ -23,6 +23,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => Promise<User | null>;
+  loginDemo: (role: "admin" | "barbeiro" | "cliente") => Promise<User>;
   logout: () => Promise<void>;
   authFetch: (input: string, init?: RequestInit) => Promise<Response | null>;
   updateUser: (
@@ -361,6 +362,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return loggedUser;
   };
 
+  const loginDemo = async (role: "admin" | "barbeiro" | "cliente"): Promise<User> => {
+    const response = await fetch(`${API_URL}/api/auth/demo-login/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ role }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(getBackendErrorMessage(errorData, "Nao foi possivel entrar na conta demo."));
+    }
+    const data = (await response.json()) as {
+      access: string;
+      refresh: string;
+      user: Record<string, unknown>;
+    };
+    const loggedUser = mapApiUserToContextUser(data.user);
+    localStorage.setItem(
+      AUTH_STORAGE_KEY,
+      JSON.stringify({
+        access: data.access,
+        refresh: data.refresh,
+        access_token: data.access,
+        refresh_token: data.refresh,
+        user: loggedUser,
+      }),
+    );
+    localStorage.setItem("access_token", data.access);
+    localStorage.setItem("refresh_token", data.refresh);
+    setAccessToken(data.access);
+    setUser(loggedUser);
+    return loggedUser;
+  };
+
   const getAuthHeaders = () => {
     const liveAccessToken = accessToken || localStorage.getItem("access_token");
     if (!liveAccessToken) {
@@ -537,6 +573,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         login,
+        loginDemo,
         logout,
         authFetch,
         updateUser,

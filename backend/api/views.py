@@ -124,6 +124,69 @@ class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
         return Response(payload, status=status.HTTP_200_OK)
 
 
+class DemoStatusView(APIView):
+    """Indica ao frontend se a interface deve mostrar os atalhos de demonstracao."""
+
+    authentication_classes: list = []
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response(
+            {
+                "demo_mode": bool(getattr(settings, "DEMO_MODE", False)),
+                "accounts": [
+                    {"role": "admin", "label": "Admin demo"},
+                    {"role": "barbeiro", "label": "Barbeiro demo"},
+                    {"role": "cliente", "label": "Cliente demo"},
+                ]
+                if getattr(settings, "DEMO_MODE", False)
+                else [],
+            }
+        )
+
+
+class DemoLoginView(APIView):
+    """Login com um clique para as contas ficticias (apenas com DEMO_MODE=True)."""
+
+    authentication_classes: list = []
+    permission_classes = [permissions.AllowAny]
+
+    # role -> (username, chave da senha nas settings)
+    ACCOUNTS = {
+        "admin": ("admin", "DEMO_ADMIN_PASSWORD"),
+        "barbeiro": ("barbeiro1", "DEMO_SEED_PASSWORD"),
+        "cliente": ("cliente1", "DEMO_SEED_PASSWORD"),
+    }
+
+    def post(self, request):
+        if not getattr(settings, "DEMO_MODE", False):
+            return Response({"detail": "Nao encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        role = str(request.data.get("role", "")).strip().lower()
+        account = self.ACCOUNTS.get(role)
+        if account is None:
+            return Response({"detail": "Perfil invalido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        username, password_setting = account
+        user = User.objects.filter(username=username).first()
+        password = str(getattr(settings, password_setting, "") or "")
+        if user is None or not password or not user.check_password(password):
+            return Response(
+                {"detail": "Contas demo indisponiveis. Execute seed_demo."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": UserSerializer(user).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
 

@@ -277,18 +277,6 @@ class MercadoPagoCheckoutView(APIView):
     throttle_scope = "checkout"
 
     def post(self, request):
-        if getattr(settings, "DEMO_MODE", False):
-            return Response(
-                {"detail": "Pagamentos desativados no modo demonstracao."},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
-        access_token = str(getattr(settings, "MERCADO_PAGO_ACCESS_TOKEN", "")).strip()
-        if not access_token:
-            return Response(
-                {"detail": "MERCADO_PAGO_ACCESS_TOKEN não configurado no backend."},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
-
         appointment_id = request.data.get("appointment_id")
         if not appointment_id:
             return Response({"detail": "appointment_id é obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
@@ -325,6 +313,42 @@ class MercadoPagoCheckoutView(APIView):
             )
         external_reference = f"appointment:{appointment.id}"
         frontend_url = str(getattr(settings, "FRONTEND_URL", "http://localhost:5173")).rstrip("/")
+
+        if getattr(settings, "DEMO_MODE", False):
+            # Pagamento simulado: nenhuma chamada ao Mercado Pago.
+            checkout_url = f"{frontend_url}/minha-conta?pagamento=simulado"
+            PaymentTransaction.objects.update_or_create(
+                appointment=appointment,
+                external_reference=external_reference,
+                defaults={
+                    "provider": PaymentTransaction.PROVIDER_MERCADO_PAGO,
+                    "preference_id": f"demo-{appointment.id}",
+                    "checkout_url": checkout_url,
+                    "amount": amount,
+                    "status": PaymentTransaction.STATUS_APPROVED,
+                    "raw_payload": {"simulated": True, "demo_mode": True},
+                },
+            )
+            if appointment.status == Appointment.STATUS_PENDING:
+                appointment.status = Appointment.STATUS_CONFIRMED
+                appointment.save(update_fields=["status", "updated_at"])
+            return Response(
+                {
+                    "simulated": True,
+                    "checkout_url": checkout_url,
+                    "preference_id": f"demo-{appointment.id}",
+                    "external_reference": external_reference,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        access_token = str(getattr(settings, "MERCADO_PAGO_ACCESS_TOKEN", "")).strip()
+        if not access_token:
+            return Response(
+                {"detail": "MERCADO_PAGO_ACCESS_TOKEN não configurado no backend."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
         backend_base = str(getattr(settings, "BACKEND_PUBLIC_URL", "http://127.0.0.1:8000")).rstrip("/")
 
         payload = {

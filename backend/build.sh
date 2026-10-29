@@ -6,10 +6,8 @@
 #   1) npm ci + npm run build - gera a SPA em static/spa (WhiteNoise / rota /).
 #   2) pip install - dependencias Python.
 #   3) collectstatic - copia estaticos (inclui a SPA) para STATIC_ROOT.
-#   4) migrate - esquema da base alinhado antes de servir requests.
 #
-# Dados de demonstracao: rode `python manage.py seed_demo` manualmente (ou defina
-# SEED_DEMO_ON_DEPLOY=1) depois do primeiro deploy.
+# Migracoes e seed rodam no start.sh (a demo recria o SQLite a cada arranque).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -32,11 +30,3 @@ fi
 cd "$SCRIPT_DIR"
 pip install -r requirements.txt
 python manage.py collectstatic --no-input
-python manage.py migrate --no-input
-
-if [ "${SEED_DEMO_ON_DEPLOY:-0}" = "1" ]; then
-  echo "[build] Executando seed_demo (idempotente)..."
-  python manage.py seed_demo
-else
-  echo "[build] seed_demo ignorado (execute manualmente ou defina SEED_DEMO_ON_DEPLOY=1)."
-fi

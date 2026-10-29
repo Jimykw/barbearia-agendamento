@@ -150,6 +150,18 @@ DATABASES = {
     )
 }
 
+if DEMO_MODE:
+    # Demo online: SQLite sempre, mesmo que DATABASE_URL aponte para PostgreSQL.
+    # O start.sh apaga e recria este ficheiro a cada inicializacao.
+    DEMO_DB_PATH = get_env_variable("DEMO_DB_PATH", str(BASE_DIR / "db.sqlite3"))
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": DEMO_DB_PATH,
+            "OPTIONS": {"timeout": 20},
+        }
+    }
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -231,6 +243,21 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip() for origin in get_env_variable("CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if origin.strip()
 ]
 
+_render_host = get_env_variable("RENDER_EXTERNAL_HOSTNAME", "").strip()
+if _render_host:
+    if _render_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_render_host)
+    _render_origin = f"https://{_render_host}"
+    if _render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_render_origin)
+
+if DEMO_MODE:
+    # Demo publica: variaveis de integracao externa sao ignoradas de proposito.
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    MERCADO_PAGO_ACCESS_TOKEN = ""
+    MERCADO_PAGO_WEBHOOK_SECRET = ""
+    WHATSAPP_ACCESS_TOKEN = ""
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
@@ -249,9 +276,6 @@ MERCADO_PAGO_WEBHOOK_SECRET = get_env_variable("MERCADO_PAGO_WEBHOOK_SECRET", ""
 WHATSAPP_ACCESS_TOKEN = get_env_variable("WHATSAPP_ACCESS_TOKEN", "")
 WHATSAPP_PHONE_NUMBER_ID = get_env_variable("WHATSAPP_PHONE_NUMBER_ID", "")
 WHATSAPP_VERIFY_TOKEN = get_env_variable("WHATSAPP_VERIFY_TOKEN", "")
-
-if DEMO_MODE:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 LOGGING = {
     "version": 1,

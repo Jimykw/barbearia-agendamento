@@ -15,8 +15,10 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
+  const [demoRoleLoading, setDemoRoleLoading] = useState<string | null>(null);
   const submitLockRef = useRef(false);
-  const { login } = useAuth();
+  const { login, loginDemo } = useAuth();
   const navigate = useNavigate();
 
   /** Pré-aquecimento leve do worker (cold start Render); não autentica, sem dados sensíveis. */
@@ -29,10 +31,40 @@ export default function Login() {
       cache: "no-store",
       headers: { Accept: "application/json" },
     }).catch(() => {
-      /* ignorar — só tentativa de acordar o serviço */
+      /* ignorar - só tentativa de acordar o serviço */
     });
     return () => ac.abort();
   }, []);
+
+  useEffect(() => {
+    const ac = new AbortController();
+    fetch(`${API_URL.replace(/\/+$/, "")}/api/demo/`, {
+      signal: ac.signal,
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => setDemoMode(Boolean(data?.demo_mode)))
+      .catch(() => {
+        /* sem demo: mantém os botões ocultos */
+      });
+    return () => ac.abort();
+  }, []);
+
+  const handleDemoLogin = async (role: "admin" | "barbeiro" | "cliente") => {
+    if (demoRoleLoading) return;
+    setDemoRoleLoading(role);
+    setError("");
+    try {
+      await loginDemo(role);
+      clearLoginIntent();
+      navigate(HOME_PATH, { replace: true });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Erro ao entrar na conta demo.");
+    } finally {
+      setDemoRoleLoading(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,6 +194,34 @@ export default function Login() {
           >
             {isLoading ? "Entrando..." : "Entrar"}
           </Button>
+
+          {demoMode && (
+            <div className="space-y-3 rounded-xl border border-accent/35 bg-accent/5 p-4">
+              <p className="text-center text-xs text-muted-foreground">
+                Ambiente de demonstração: dados fictícios, pagamentos e envios simulados.
+              </p>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {([
+                  { role: "admin", label: "Admin demo" },
+                  { role: "barbeiro", label: "Barbeiro demo" },
+                  { role: "cliente", label: "Cliente demo" },
+                ] as const).map((item) => (
+                  <Button
+                    key={item.role}
+                    type="button"
+                    variant="accentOutline"
+                    size="sm"
+                    disabled={isLoading || demoRoleLoading !== null}
+                    isLoading={demoRoleLoading === item.role}
+                    onClick={() => void handleDemoLogin(item.role)}
+                    className="w-full"
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">

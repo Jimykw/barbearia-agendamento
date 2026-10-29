@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: barbearia-demo
+    runtime: python
+    plan: free
+    branch: main
+    rootDir: backend
+    buildCommand: bash build.sh
+    startCommand: bash start.sh
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.10"
+      - key: NODE_VERSION
+        value: "22"
+      - key: DJANGO_ENV
+        value: prod
+      - key: DEMO_MODE
+        value: "true"
+      - key: DEMO_DB_PATH
+        value: /tmp/barbearia-demo.sqlite3
+      - key: DEMO_SEED_PASSWORD
+        value: demo12345
+      - key: DEMO_ADMIN_PASSWORD
+        value: demo12345
+      - key: SECRET_KEY
+        generateValue: true

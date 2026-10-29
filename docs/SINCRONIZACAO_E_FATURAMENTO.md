@@ -31,7 +31,9 @@ Endpoints:
 - `POST /api/payments/checkout/` (autenticado, dono do agendamento ou admin): cria preferencia no Mercado Pago usando o preco do servico cadastrado em `/api/services/`.
 - `POST /api/payments/mercado-pago/webhook/`: exige `MERCADO_PAGO_WEBHOOK_SECRET`, valida `x-signature` (HMAC SHA-256 de `id:<payment_id>;request-id:<x-request-id>;ts:<ts>;`) e confirma o agendamento quando o pagamento e aprovado.
 
-Com `DEMO_MODE=True`, checkout e webhook respondem `503` e os e-mails vao para o console.
+Com `DEMO_MODE=True`, nenhuma chamada externa e feita: o checkout cria uma
+`PaymentTransaction` ja aprovada (pagamento simulado), confirma o agendamento e os
+e-mails vao para o console; o webhook responde `503`.
 
 ## Regras de cobranca exibidas na UI
 

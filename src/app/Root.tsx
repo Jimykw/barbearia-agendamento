@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo, type ComponentType } from "react";
 import ScrollToTop from "@/app/components/ScrollToTop";
+import { API_URL } from "@/services/api";
 import { LOGIN_PATH, loginLocationState, setLoginIntent } from "@/lib/authRoutes";
 import { ClientPackageExpiryModal } from "@/app/components/ClientPackageExpiryModal";
 import { AuthProvider, useAuth } from "@/app/context/AuthContext";
@@ -54,9 +55,25 @@ const ROLE_LABEL: Record<Role, string> = {
 function RootContent() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    const ac = new AbortController();
+    fetch(`${API_URL.replace(/\/+$/, "")}/api/demo/`, {
+      signal: ac.signal,
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => setDemoMode(Boolean(data?.demo_mode)))
+      .catch(() => {
+        /* sem demo: banner oculto */
+      });
+    return () => ac.abort();
+  }, []);
 
   const isActive = (path: string) =>
     path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
@@ -426,6 +443,11 @@ function RootContent() {
       </header>
 
       <main className="pt-[73px]">
+        {demoMode && (
+          <div className="border-b border-accent/25 bg-accent/10 px-4 py-2 text-center text-xs text-accent sm:text-sm">
+            Ambiente de demonstração — dados fictícios; pagamentos, WhatsApp e e-mail simulados.
+          </div>
+        )}
         <AnimatePresence>
           {menuOpen && (
             <motion.div

@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
-from django.test import TestCase
+from django.core.management.base import CommandError
+from django.test import TestCase, override_settings
 
 from api.models import ClientPackage, ClientPackageSubscription
 from api.serializers import (
@@ -118,6 +119,7 @@ class AppointmentConflictTests(TestCase):
         self.assertIn("non_field_errors", second.data["errors"])
 
 
+@override_settings(DEMO_MODE=True)
 class SeedDemoCommandTests(TestCase):
     def test_seed_demo_is_idempotent(self):
         from django.core.management import call_command
@@ -147,3 +149,48 @@ class SeedDemoCommandTests(TestCase):
         self.assertTrue(
             Appointment.objects.filter(status=Appointment.STATUS_CONCLUIDO).exists()
         )
+
+    @override_settings(DEMO_MODE=False)
+    def test_seed_demo_refuses_to_run_outside_demo_mode(self):
+        from django.core.management import call_command
+
+        with self.assertRaises(CommandError):
+            call_command("seed_demo", verbosity=0)
+
+
+class DemoModeApiTests(TestCase):
+    def setUp(self):
+        from rest_framework.test import APIClient
+
+        self.client = APIClient()
+
+    def test_healthz_is_public_and_database_free(self):
+        response = self.client.get("/healthz")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
+
+    def test_demo_status_and_login_are_disabled_outside_demo_mode(self):
+        status_response = self.client.get("/api/demo/")
+        self.assertEqual(status_response.status_code, 200)
+        self.assertFalse(status_response.json()["demo_mode"])
+
+        login_response = self.client.post(
+            "/api/auth/demo-login/", {"role": "cliente"}, format="json"
+        )
+        self.assertEqual(login_response.status_code, 404)
+
+    @override_settings(DEMO_MODE=True, DEMO_SEED_PASSWORD="demo12345")
+    def test_demo_login_returns_tokens_for_seeded_account(self):
+        from django.core.management import call_command
+
+        call_command("seed_demo", verbosity=0)
+
+        status_response = self.client.get("/api/demo/")
+        self.assertTrue(status_response.json()["demo_mode"])
+
+        login_response = self.client.post(
+            "/api/auth/demo-login/", {"role": "cliente"}, format="json"
+        )
+        self.assertEqual(login_response.status_code, 200, login_response.data)
+        self.assertTrue(login_response.data["access"])
+        self.assertEqual(login_response.data["user"]["username"], "cliente1")

@@ -57,14 +57,22 @@ class MercadoPagoCheckoutPermissionTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
     @override_settings(DEMO_MODE=True)
-    def test_demo_mode_disables_checkout(self):
+    def test_demo_mode_simulates_payment_without_provider(self):
         self.client.force_authenticate(self.owner)
-        response = self.client.post(
-            "/api/payments/checkout/",
-            {"appointment_id": self.appointment.id},
-            format="json",
-        )
-        self.assertEqual(response.status_code, 503)
+        with mock.patch("billing.views.urllib_request.urlopen") as urlopen:
+            response = self.client.post(
+                "/api/payments/checkout/",
+                {"appointment_id": self.appointment.id},
+                format="json",
+            )
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(response.data["simulated"])
+        urlopen.assert_not_called()
+        self.appointment.refresh_from_db()
+        self.assertEqual(self.appointment.status, Appointment.STATUS_CONFIRMED)
+        transaction = PaymentTransaction.objects.get(appointment=self.appointment)
+        self.assertEqual(transaction.status, PaymentTransaction.STATUS_APPROVED)
+        self.assertTrue(transaction.raw_payload.get("simulated"))
 
     @override_settings(DEMO_MODE=False, MERCADO_PAGO_ACCESS_TOKEN="")
     def test_missing_provider_token_returns_503(self):

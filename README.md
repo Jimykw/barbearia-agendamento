@@ -13,12 +13,13 @@ Plataforma web (SaaS) que substitui a agenda de papel de uma barbearia: agendame
 | :---: | :---: |
 | ![Página inicial](docs/screenshots/home.png) | ![Login com botões de demonstração](docs/screenshots/login-demo.png) |
 
-| Dashboard do administrador |
+| Dashboard do administrador | Agenda do barbeiro |
 | :---: | :---: |
-| ![Dashboard do administrador](docs/screenshots/dashboard-admin.png)
-| Agenda do barbeiro | Agendamento do cliente |
-| :---: | :---: |
-| ![Painel do barbeiro](docs/screenshots/agenda-barbeiro.png) | ![Fluxo de agendamento](docs/screenshots/agendamento.png) |
+| ![Dashboard do administrador](docs/screenshots/dashboard-admin.png) | ![Painel do barbeiro](docs/screenshots/agenda-barbeiro.png) |
+
+<p align="center">
+  <img src="docs/screenshots/agendamento.png" alt="Fluxo de agendamento do cliente" width="640">
+</p>
 
 ---
 

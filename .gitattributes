@@ -1,0 +1,3 @@
+src/app/pages/** linguist-detectable=false
+src/app/Root.tsx linguist-detectable=false
+package-lock.json linguist-detectable=false

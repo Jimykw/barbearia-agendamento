@@ -4,9 +4,8 @@ Plataforma web (SaaS) que substitui a agenda de papel de uma barbearia: agendame
 
 > Este projeto é baseado em um sistema real, em produção com um cliente. Nomes, dados e integrações foram anonimizados e substituídos por dados fictícios para este repositório de portfólio.
 
-**🔗 Demo online:** [LINK DA DEMO]
+**🔗 Demo online:** https://barbearia-demo-99p1.onrender.com
 *(a primeira visita pode levar cerca de 1 minuto, porque o serviço gratuito hiberna quando fica sem acesso)*
-**🎥 Vídeo de 2 minutos:** [LINK DO VÍDEO]
 
 ---
 
@@ -174,7 +173,7 @@ Cobertura atual:
 
 A demo é publicada no Render com um `render.yaml` (Blueprint) em um único serviço gratuito, sem Docker e sem PostgreSQL: o `start.sh` recria o SQLite e roda o `seed_demo` a cada arranque. Passo a passo em [`docs/GUIA_DEPLOY_RENDER.md`](docs/GUIA_DEPLOY_RENDER.md).
 
-Para monitorar o serviço, configure um ping HTTP em `https://SUA-URL.onrender.com/healthz` a cada 5 minutos; o endpoint responde `{"ok": true, "demo": true}` sem consultar o banco.
+Para monitorar o serviço, configure um ping HTTP em `https://barbearia-demo-99p1.onrender.com/healthz` a cada 5 minutos; o endpoint responde `{"ok": true, "demo": true}` sem consultar o banco.
 
 Outros guias: [`docs/GUIA_TESTES.md`](docs/GUIA_TESTES.md) e [`docs/SINCRONIZACAO_E_FATURAMENTO.md`](docs/SINCRONIZACAO_E_FATURAMENTO.md). Não há workflow de CI (GitHub Actions) configurado.
 
